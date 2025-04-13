@@ -1,66 +1,74 @@
+# naver_smartstore/fetch_orders.py
+
 import requests
-import logging
-from datetime import datetime
+import logging, time, json
+import bcrypt
+import pybase64
+
 from config import settings
+from datetime import datetime, timedelta
 
-# 조회할 기간 설정
-start_date = "2025-04-01"
-end_date = "2025-04-31"
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-# ISO 포맷으로 변환
-start_datetime = f"{start_date}T00:00:00"
-end_datetime = f"{end_date}T23:59:59"
+client_id = settings.CLIENT_ID
+client_secret = settings.CLIENT_SECRET
 
-# 기본 URL
-BASE_URL = "https://api.commerce.naver.com/external/v1"
+# 토큰생성
+def generate_client_secret_sign(client_secret, timestamp):
+    clientSecret = client_secret
+    # 밑줄로 연결하여 password 생성
+    password = client_id + "_" + str(timestamp)
+    # bcrypt 해싱
+    hashed = bcrypt.hashpw(password.encode('utf-8'), clientSecret.encode('utf-8'))
+    # base64 인코딩
+    return pybase64.standard_b64encode(hashed).decode('utf-8')
 
-# 요청 헤더
-HEADERS = {
-    "X-Naver-Client-Id": settings.NAVER_CLIENT_ID,
-    "X-Naver-Client-Secret": settings.NAVER_CLIENT_SECRET,
-    "Content-Type": "application/json",
-}
+def get_access_token():
+    timestamp = str(int(time.time() * 1000))  # UTC 밀리초
+    client_secret_sign = generate_client_secret_sign(client_secret, timestamp)
 
-# 주문 데이터 조회
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json'
+    }
+    payload = {
+        "client_id": client_id,
+        "client_secret_sign": client_secret_sign,
+        "grant_type": "client_credentials",
+        "timestamp": timestamp,
+        "type": "SELF"
+    }
+
+    response = requests.post(settings.TOKEN_URL, headers=headers, data=payload)
+
+    if response.status_code == 200:
+        return response.json().get("access_token")
+    else:
+        print(response.status_code, response.text)
+        return None
+
 def fetch_orders():
-    page = 1
-    page_size = 100
-    all_orders = []
+    token = get_access_token()
 
-    while True:
-        url = (
-            f"{BASE_URL}/orders?"
-            f"lastChangeFrom={start_datetime}&"
-            f"lastChangeTo={end_datetime}&"
-            f"page={page}&pageSize={page_size}"
-        )
+    if not token:
+        return
 
-        response = requests.get(url, headers=HEADERS)
+    headers = {
+        "Accept": "application/json",
+        "Authorization": f"Bearer {token}"
+    }
 
-        if response.status_code != 200:
-            logging.error(f"주문 조회 실패: {response.status_code} - {response.text}")
-            break
+    order_params = {
+        "rangeType": "PAYED_DATETIME",
+        "productOrderStatuses": ["PAYED"],
+        "from": "2025-04-12T12:00:00.000+09:00",
+        "to": "2025-04-13T12:00:00.000+09:00",
+    }
 
-        data = response.json()
-        orders = data.get("data", {}).get("orderProducts", [])
-
-        if not orders:
-            break
-
-        all_orders.extend(orders)
-        print(f"{len(orders)}건 불러옴 (페이지 {page})")
-
-        # 더 이상 다음 페이지가 없으면 중단
-        if not data.get("data", {}).get("hasNext", False):
-            break
-
-        page += 1
-
-    return all_orders
+    response = requests.get(settings.ORDER_URL, headers=headers, params=order_params)
+    print(response.status_code)
+    # print(response.json())
 
 if __name__ == "__main__":
-    orders = fetch_orders()
-    print(f"총 {len(orders)}건의 주문 데이터를 가져왔습니다.\n")
-
-    for order in orders:
-        print(order)
+    fetch_orders()
