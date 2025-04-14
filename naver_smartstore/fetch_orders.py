@@ -6,7 +6,8 @@ import bcrypt
 import pybase64
 
 from config import settings
-from datetime import datetime, timedelta
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -48,7 +49,7 @@ def get_access_token():
         print(response.status_code, response.text)
         return None
 
-def fetch_orders():
+def fetch_orders(start_date: str, end_date: str):
     token = get_access_token()
 
     if not token:
@@ -59,16 +60,28 @@ def fetch_orders():
         "Authorization": f"Bearer {token}"
     }
 
+    start_obj = datetime.strptime(start_date, '%Y-%m-%d %H:%M:%S').replace(tzinfo=ZoneInfo('Asia/Seoul'))
+    end_obj = datetime.strptime(end_date, '%Y-%m-%d %H:%M:%S').replace(tzinfo=ZoneInfo('Asia/Seoul'))
+
+    from_dt = start_obj.isoformat(timespec='milliseconds')
+    to_dt = end_obj.isoformat(timespec='milliseconds')
+
     order_params = {
-        "rangeType": "PAYED_DATETIME",
-        "productOrderStatuses": ["PAYED"],
-        "from": "2025-04-12T12:00:00.000+09:00",
-        "to": "2025-04-13T12:00:00.000+09:00",
+        # "rangeType": "PAYED_DATETIME",
+        # "productOrderStatuses": ["PAYED"],
+        "from": from_dt,
+        "to": to_dt,
+        # "page": 1,
+        # "pageSize": 1
     }
 
     response = requests.get(settings.ORDER_URL, headers=headers, params=order_params)
-    print(response.status_code)
-    # print(response.json())
+
+    if response.status_code == 200:
+        return response.json()  # ✅ str 말고 json()으로 리턴
+    else:
+        logging.error(f"주문 요청 실패: {response.status_code} - {response.text}")
+        return []
 
 if __name__ == "__main__":
     fetch_orders()
