@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 def parse_orders_for_spreadsheet(order_data):
     rows = []
 
