@@ -11,7 +11,7 @@ from sheets.save_to_excel import save_to_excel  # 같은 디렉토리에 저장�
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 # ✅ True면 로컬 JSON 파일에서 읽음, False면 API 호출
-USE_LOCAL_JSON = False  
+USE_LOCAL_JSON = False
 
 def load_orders_from_file(filepath: str):
     try:
@@ -26,15 +26,17 @@ def load_orders_from_file(filepath: str):
 if __name__ == "__main__":
 
     if USE_LOCAL_JSON:
-        with open("data/raw/sample_orders.json", "r", encoding="utf-8") as f:
-            order_data = json.load(f)
+        with open("data/sample_order.json", "r", encoding="utf-8") as f:
+            orders = json.load(f)
     else:
-        start_date = "2025-04-13 00:00:00"
-        end_date = "2025-04-14 00:00:00"
+        start_date = "2025-04-14 00:00:00"
+        end_date = "2025-04-15 00:00:00"
 
         orders = fetch_orders(start_date, end_date)
 
+    # print("orders :",orders)
     parsed_rows = parse_orders_for_spreadsheet(orders)
+    # print("parsed_rows :",parsed_rows)
     save_to_excel(parsed_rows, "주문리스트_예시.xlsx")
 
     # for row in parsed_rows:
