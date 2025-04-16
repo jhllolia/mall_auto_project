@@ -29,26 +29,10 @@ if __name__ == "__main__":
         with open("data/sample_order.json", "r", encoding="utf-8") as f:
             orders = json.load(f)
     else:
-        start_date = "2025-04-14 00:00:00"
-        end_date = "2025-04-15 00:00:00"
+        start_date = "2025-04-15 00:00:00"
+        end_date = "2025-04-16 00:00:00"
 
         orders = fetch_orders(start_date, end_date)
 
-    # print("orders :",orders)
     parsed_rows = parse_orders_for_spreadsheet(orders)
-    # print("parsed_rows :",parsed_rows)
     save_to_excel(parsed_rows, "주문리스트_예시.xlsx")
-
-    # for row in parsed_rows:
-    #     print("\t".join(map(str, row)))
-
-    # ▶ 여기서 원하는 출력/처리 작업을 하면 됩니다.
-    # for order in orders:
-    #     contents = order.get("data", {}).get("contents", [])
-
-    #     for item in contents:
-    #         content = order.get('content', {})
-    #         order_info = content.get('order', {})
-    #         product_order = content.get('productOrder', {})
-    #         shipping_address = product_order.get('shippingAddress', {})
-
