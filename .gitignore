@@ -1,3 +1,6 @@
+# settings.py 숨기기
+config/settings.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
