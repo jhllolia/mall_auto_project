@@ -11,7 +11,7 @@ from sheets.save_to_excel import save_to_excel  # 같은 디렉토리에 저장�
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 # ✅ True면 로컬 JSON 파일에서 읽음, False면 API 호출
-USE_LOCAL_JSON = True
+USE_LOCAL_JSON = False
 
 def load_orders_from_file(filepath: str):
     try:

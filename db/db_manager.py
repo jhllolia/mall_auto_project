@@ -1,1 +1,1 @@
-print("DB 연결 및 쿼리 처리")
+from db.connection import get_connection

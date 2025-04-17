@@ -7,3 +7,12 @@ CLIENT_SECRET = "$2a$04$wgqx8rj8./Cd0FvpJtDu.u"
 # set PYTHONPATH=.python naver_smartstore/fetch_orders.py
 TOKEN_URL = "https://api.commerce.naver.com/external/v1/oauth2/token"
 ORDER_URL = "https://api.commerce.naver.com/external/v1/pay-order/seller/product-orders"
+
+# MYSQL
+DB_CONFIG = {
+    'host': 'my8003.gabiadb.com',
+    'user': 'tosokcokr',
+    'password': 'tosokcokr##^^',
+    'database': 'tosokcokr',
+    'port': 3306
+}

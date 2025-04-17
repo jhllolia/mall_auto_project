@@ -83,5 +83,5 @@ def fetch_orders(start_date: str, end_date: str):
         logging.error(f"주문 요청 실패: {response.status_code} - {response.text}")
         return []
 
-if __name__ == "__main__":
-    fetch_orders()
+# if __name__ == "__main__":
+#     fetch_orders()
